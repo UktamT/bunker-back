@@ -68,6 +68,11 @@ io.on("connection", (socket) => {
     io.emit("receive_message", messageWithTime);
   });
 
+  socket.on("clear_messages", () => {
+    writeMessages([]);
+    io.emit("messages_cleared");
+  });
+
   socket.on("disconnect", () => {
     console.log(`Один еблан ливнул ${socket.id}`);
     io.emit("online_count", io.engine.clientsCount);
