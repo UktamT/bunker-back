@@ -53,6 +53,7 @@ io.on("connection", (socket) => {
 
   socket.on("send_message", (data) => {
     const messageWithTime = {
+      id: Date.now().toString() + Math.random().toString(36).substring(2, 5),
       ...data,
       time: new Date().toLocaleTimeString([], {
         hour: "2-digit",
