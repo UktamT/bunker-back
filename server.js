@@ -43,7 +43,22 @@ const writeMessages = (messages) => {
 };
 
 io.on("connection", (socket) => {
-  console.log(`Зашел один еблан ${socket.id}`);
+  const ip =
+    socket.handshake.headers["x-forwarded-for"] || socket.handshake.address;
+
+  const userAgent = socket.handshake.headers["user-agent"];
+  const isMobile = /Mobile|Android|iPhone/i.test(userAgent)
+    ? "📱 Мобилка"
+    : "💻 Комп";
+
+  const lang =
+    socket.handshake.headers["accept-language"]?.split(",")[0] || "неизвестно";
+
+  console.log(`--- Новый коннект ---`);
+  console.log(` IP-адрес: ${ip}`);
+  console.log(` Девайс: ${isMobile}`);
+  console.log(` Язык браузера: ${lang}`);
+  console.log(`---------------------`);
 
   const history = readMessages();
   setTimeout(() => {
