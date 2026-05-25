@@ -63,6 +63,7 @@ io.on("connection", (socket) => {
   });
 
   socket.on("seek", (seekData) => {
+    console.log("Получены данные перемотки:", seekData);
     socket.broadcast.emit("seek", seekData);
   });
 
