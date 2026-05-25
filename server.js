@@ -4,17 +4,18 @@ import cors from "cors";
 import { Server } from "socket.io";
 import fs from "fs";
 
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 3002;
 
 const app = express();
 app.use(cors());
 
 const server = http.createServer(app);
 const FILE_PATH = "./messages.json";
+let currentVideoUrl = "";
 
 const io = new Server(server, {
   cors: {
-    origin: ["http://localhost:5173", "https://uktamt.github.io"],
+    origin: ["http://localhost:5174", "https://uktamt.github.io"],
     methods: ["GET", "POST"],
     credentials: true,
   },
@@ -43,28 +44,27 @@ const writeMessages = (messages) => {
 };
 
 io.on("connection", (socket) => {
-  const ip =
-    socket.handshake.headers["x-forwarded-for"] || socket.handshake.address;
-
-  const userAgent = socket.handshake.headers["user-agent"];
-  const isMobile = /Mobile|Android|iPhone/i.test(userAgent)
-    ? "📱 Мобилка"
-    : "💻 Комп";
-
-  const lang =
-    socket.handshake.headers["accept-language"]?.split(",")[0] || "неизвестно";
-
-  console.log(`--- Новый коннект ---`);
-  console.log(` IP-адрес: ${ip}`);
-  console.log(` Девайс: ${isMobile}`);
-  console.log(` Язык браузера: ${lang}`);
-  console.log(`---------------------`);
-
   const history = readMessages();
   setTimeout(() => {
     io.emit("online_count", io.engine.clientsCount);
   }, 50);
   socket.emit("message_history", history);
+
+  socket.emit("video_url", currentVideoUrl);
+
+  socket.on("change_video", (newVideoUrl) => {
+    currentVideoUrl = newVideoUrl;
+    io.emit("video_url", newVideoUrl);
+  });
+
+  socket.on("playback", (playbackData) => {
+    console.log("Получены данные воспроизведения:", playbackData);
+    socket.broadcast.emit("playback", playbackData);
+  });
+
+  socket.on("seek", (seekData) => {
+    socket.broadcast.emit("seek", seekData);
+  });
 
   socket.on("send_message", (data) => {
     const messageWithTime = {
